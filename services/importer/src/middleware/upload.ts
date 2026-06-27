@@ -9,11 +9,10 @@ const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
  */
 const storage = multer.memoryStorage();
 
-
 function csvFilter(
   _req: Request,
   file: Express.Multer.File,
-  callback: FileFilterCallback
+  callback: FileFilterCallback,
 ): void {
   const allowedMimeTypes = [
     "text/csv",
@@ -25,10 +24,11 @@ function csvFilter(
   const hasValidMime = allowedMimeTypes.includes(file.mimetype);
   const hasValidExtension = file.originalname.toLowerCase().endsWith(".csv");
 
-  (hasValidMime || hasValidExtension) ? 
-    callback(null, true) : 
-    callback(new Error(`Only CSV files are accepted. Received: ${file.mimetype}`));
-
+  hasValidMime || hasValidExtension
+    ? callback(null, true)
+    : callback(
+        new Error(`Only CSV files are accepted. Received: ${file.mimetype}`),
+      );
 }
 
 // Re-configured Multer instance for the import endpoint

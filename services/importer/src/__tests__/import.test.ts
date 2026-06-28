@@ -1,0 +1,175 @@
+import express, { Application, Request, Response, NextFunction } from "express";
+import request from "supertest";
+import { importRouter } from "../routes/import";
+import * as csvParser from "../utils/csv_parser";
+
+// Mock Config
+jest.mock("../config", () => ({
+  CSV_PARSE_OPTIONS: {
+    maxFileSizeBytes: 1024, // 1KB
+    maxColumns: 10,
+    maxRows: 100,
+    maxCellLength: 50,
+    sanitizeCells: true,
+  },
+  UPLOAD_CONFIG: {
+    allowedMimeTypes: ["text/csv", "application/vnd.ms-excel"],
+    fieldName: "file",
+  },
+  RATE_LIMIT_CONFIG: {
+    windowMs: 60_000,
+    max: 100,
+    message: "Too many requests",
+  },
+}));
+
+// Mock UUID
+let uuidCounter = 0;
+jest.mock("uuid", () => ({
+  v4: jest.fn(() => {
+    uuidCounter += 1;
+    // Formats a valid UUIDv4 structure
+    return `12345678-1234-4000-8000-${String(uuidCounter).padStart(12, "0")}`;
+  }),
+}));
+
+// App Setup Helper
+function buildApp(): Application {
+  const app = express();
+  app.use(express.json());
+  app.use("/import", importRouter);
+
+  // Catch-all error handler so 500s return JSON instead of crashing the test runner
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    res.status(500).json({ success: false, error: err.message });
+  });
+
+  return app;
+}
+
+// Tests
+describe("POST /import/upload", () => {
+  let app: Application;
+
+  beforeEach(() => {
+    app = buildApp();
+    jest.restoreAllMocks(); // Clears any spyOn implementations between tests
+  });
+
+  // Happy path
+  describe("200 – successful upload", () => {
+    it("returns success:true and parsed data when no rows are skipped", async () => {
+      const csvContent = "id,name\n1,Alice\n2,Bob";
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from(csvContent), "test.csv");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.headers).toEqual(["id", "name"]);
+      expect(res.body.data.totalRows).toBe(2);
+      expect(res.body.data.validRows).toBe(2);
+      expect(res.body.data.skippedRows).toBe(0);
+    });
+  });
+
+  // 207 Multi-Status
+  describe("207 – partial success", () => {
+    it("returns 207 when some rows are skipped due to column mismatch", async () => {
+      // Row 2 is missing a column, which triggers a skip in your parser
+      const csvContent = "id,name\n1,Alice\n2\n3,Bob";
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from(csvContent), "test.csv");
+
+      expect(res.status).toBe(207);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.totalRows).toBe(3);
+      expect(res.body.data.skippedRows).toBe(1);
+      expect(res.body.data.validRows).toBe(2);
+      expect(res.body.data.errors).toHaveLength(1);
+    });
+  });
+
+  // 400 Bad Request (Middleware & Multer)
+  describe("400 – missing or invalid files", () => {
+    it("returns 400 when no file is uploaded", async () => {
+      const res = await request(app).post("/import/upload"); // No .attach()
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/No file uploaded/i);
+    });
+
+    it("returns 400 when multer rejects the file type", async () => {
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from("data"), "test.txt"); // .txt instead of .csv
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/Invalid file type/i);
+    });
+
+    it("returns 400 when multer rejects an oversized file", async () => {
+      // Config limits this to 1024 bytes. We send 2000.
+      const hugeBuffer = Buffer.alloc(2000, "x");
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", hugeBuffer, "large.csv");
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/File too large/i);
+    });
+  });
+
+  // 422 Unprocessable Entity (Parser Logic)
+  describe("422 – CSV validation errors", () => {
+    it("returns 422 for duplicate headers natively", async () => {
+      const csvContent = "id,id\n1,1";
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from(csvContent), "test.csv");
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/Duplicate column headers/i);
+    });
+
+    it("returns 422 when max columns are exceeded", async () => {
+      // Config allows 10 columns, we send 11
+      const cols = Array.from({ length: 11 }, (_, i) => `col${i}`).join(",");
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from(cols), "test.csv");
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/maximum allowed is 10/i);
+    });
+  });
+
+  // 500 Internal Server Error
+  describe("500 – unexpected errors", () => {
+    it("re-throws non-CsvValidationError exceptions for the global handler", async () => {
+      // This is the only place we use a mock, specifically to force a server crash
+      jest.spyOn(csvParser, "parseCsvBuffer").mockImplementationOnce(() => {
+        throw new TypeError("Unexpected internal crash");
+      });
+
+      const res = await request(app)
+        .post("/import/upload")
+        .attach("file", Buffer.from("id\n1"), "test.csv");
+
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/Unexpected internal crash/i);
+    });
+  });
+});

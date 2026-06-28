@@ -37,6 +37,7 @@ export function parseCsvBuffer(
   const parsed = Papa.parse<string[]>(raw, {
     header: false,
     skipEmptyLines: true,
+    delimiter: ",", // TODO Maybe add it as a option in config or send post atribute
   });
 
   if (parsed.errors.length > 0) {

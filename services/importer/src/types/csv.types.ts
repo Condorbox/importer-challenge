@@ -1,8 +1,7 @@
-
 // A raw parsed row from PapaParse, values are always strings until validated.
 export type CsvRow = Record<string, string>;
 
-// Upload Result 
+// Upload Result
 export interface ParsedCsvResult {
   uploadId: string;
   filename: string;
@@ -21,8 +20,8 @@ export interface RowError {
   message: string;
 }
 
-// Config 
-export interface CsvParseOptions { 
+// Config
+export interface CsvParseOptions {
   // Maximum file size in bytes
   maxFileSizeBytes: number;
   // Maximum number of rows allowed
@@ -37,7 +36,7 @@ export interface CsvParseOptions {
   sanitizeCells: boolean;
 }
 
-// API Responses 
+// API Responses
 export interface ApiSuccess<T> {
   success: true;
   data: T;

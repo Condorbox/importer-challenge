@@ -9,9 +9,9 @@ export const CSV_PARSE_OPTIONS: CsvParseOptions = {
 };
 
 export const UPLOAD_CONFIG = {
-  // Multer stores files in memory — no temp files left on disk 
+  // Multer stores files in memory — no temp files left on disk
   storageType: "memory" as const,
-  // Allowed MIME types 
+  // Allowed MIME types
   allowedMimeTypes: ["text/csv", "text/plain", "application/vnd.ms-excel"],
   fieldName: "file",
 } as const;

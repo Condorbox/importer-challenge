@@ -1,4 +1,4 @@
-import express, { Application, Request, Response, NextFunction } from "express";
+import express, { Application, Request, Response } from "express";
 import { importRouter } from "./routes/import";
 import helmet from "helmet";
 
@@ -11,14 +11,14 @@ export function createApp(): Application {
   app.use(helmet());
 
   app.get("/health", (_req, res) => {
-    res.status(200).json({ status: "ok", timestamp: new Date().toISOString()});
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
   app.use("/import", importRouter);
 
   // Global error handler catches errors forwarded via next(err),
   // TODO Change it for more customs errors
-  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: Error, _req: Request, res: Response) => {
     console.error("[error]", err.message);
 
     if (err.message.includes("Only CSV files are accepted")) {

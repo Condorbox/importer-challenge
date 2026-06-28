@@ -10,11 +10,10 @@ export const importRouter = Router();
 const uploadRateLimit = rateLimit({
   windowMs: RATE_LIMIT_CONFIG.windowMs,
   max: RATE_LIMIT_CONFIG.max,
-  standardHeaders: true,  // Return RateLimit-* headers
+  standardHeaders: true, // Return RateLimit-* headers
   legacyHeaders: false,
   message: { success: false, error: RATE_LIMIT_CONFIG.message },
 });
-
 
 // POST /import
 // Accepts a multipart/form-data request with a CSV in the "file" field.
@@ -41,7 +40,8 @@ importRouter.post(
     if (!req.file) {
       const response: ApiResponse<never> = {
         success: false,
-        error: 'No file uploaded. Send the CSV as multipart/form-data with field name "file".',
+        error:
+          "No file uploaded. Send the CSV as multipart/form-data with field name 'file'.",
       };
       res.status(400).json(response);
       return;
@@ -49,16 +49,15 @@ importRouter.post(
 
     try {
       const result = parseCsvBuffer(req.file.buffer, req.file.originalname);
- 
+
       const response: ApiResponse<ParsedCsvResult> = {
         success: true,
         data: result,
       };
- 
+
       // 207 Multi-Status when some rows were skipped due to format errors
       const status = result.skippedRows > 0 ? 207 : 200;
       res.status(status).json(response);
-
     } catch (err) {
       if (err instanceof CsvValidationError) {
         const response: ApiResponse<never> = {
@@ -68,7 +67,7 @@ importRouter.post(
         res.status(422).json(response);
         return;
       }
-      
+
       // Unexpected error
       throw err;
     }

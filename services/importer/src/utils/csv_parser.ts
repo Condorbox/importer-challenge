@@ -1,7 +1,11 @@
-import Papa from 'papaparse';
+import Papa from "papaparse";
 import { v4 as uuidv4 } from "uuid";
 import { CSV_PARSE_OPTIONS } from "../config";
-import { isSafeHeader, normaliseCellLength, sanitizeCell } from "../utils/sanitize";
+import {
+  isSafeHeader,
+  normaliseCellLength,
+  sanitizeCell,
+} from "../utils/sanitize";
 import type {
   CsvParseOptions,
   CsvRow,
@@ -9,20 +13,19 @@ import type {
   RowError,
 } from "../types/csv.types";
 
-
 // TODO Make multiple fuctions for this
 
 /**
  * Parse a CSV buffer into a validated, sanitized result.
  *
- * @param buffer  - Raw file bytes 
- * @param filename - Original filename 
+ * @param buffer  - Raw file bytes
+ * @param filename - Original filename
  * @param options - Override any default limits
  */
 export function parseCsvBuffer(
   buffer: Buffer,
   filename: string,
-  options: CsvParseOptions = CSV_PARSE_OPTIONS
+  options: CsvParseOptions = CSV_PARSE_OPTIONS,
 ): ParsedCsvResult {
   const uploadId = uuidv4();
   const errors: RowError[] = [];
@@ -32,7 +35,7 @@ export function parseCsvBuffer(
 
   // Parse with papaparse
   const parsed = Papa.parse<string[]>(raw, {
-    header: false,       
+    header: false,
     skipEmptyLines: true,
   });
 
@@ -48,12 +51,12 @@ export function parseCsvBuffer(
     return emptyResult(uploadId, filename, errors);
   }
 
-  // Header validation 
+  // Header validation
   const rawHeaders = rows[0].map((h) => h.trim());
 
   if (rawHeaders.length > options.maxColumns) {
     throw new CsvValidationError(
-      `File has ${rawHeaders.length} columns; maximum allowed is ${options.maxColumns}.`
+      `File has ${rawHeaders.length} columns; maximum allowed is ${options.maxColumns}.`,
     );
   }
 
@@ -62,21 +65,22 @@ export function parseCsvBuffer(
   if (unsafeHeaders.length > 0) {
     throw new CsvValidationError(
       `Unsafe header name(s) detected: ${unsafeHeaders.join(", ")}. ` +
-        "Headers must contain only letters, digits, spaces, hyphens, and underscores."
+        "Headers must contain only letters, digits, spaces, hyphens, and underscores.",
     );
   }
 
   // Schema enforcement if needed
   if (options.allowedHeaders && options.allowedHeaders.length > 0) {
     const missing = options.allowedHeaders.filter(
-      (h) => !rawHeaders.includes(h)
+      (h) => !rawHeaders.includes(h),
     );
     const extra = rawHeaders.filter(
-      (h) => !options.allowedHeaders!.includes(h)
+      (h) => !options.allowedHeaders!.includes(h),
     );
     if (missing.length > 0 || extra.length > 0) {
       const details: string[] = [];
-      if (missing.length) details.push(`Missing columns: ${missing.join(", ")}`);
+      if (missing.length)
+        details.push(`Missing columns: ${missing.join(", ")}`);
       if (extra.length) details.push(`Unexpected columns: ${extra.join(", ")}`);
       throw new CsvValidationError(details.join(" | "));
     }
@@ -93,11 +97,11 @@ export function parseCsvBuffer(
 
   if (dataRows.length > options.maxRows) {
     throw new CsvValidationError(
-      `File has ${dataRows.length} data rows; maximum allowed is ${options.maxRows}.`
+      `File has ${dataRows.length} data rows; maximum allowed is ${options.maxRows}.`,
     );
   }
 
-  // Row-level processing 
+  // Row-level processing
   const validData: CsvRow[] = [];
   let skipped = 0;
 
@@ -156,7 +160,7 @@ export class CsvValidationError extends Error {
 function emptyResult(
   uploadId: string,
   filename: string,
-  errors: RowError[]
+  errors: RowError[],
 ): ParsedCsvResult {
   return {
     uploadId,

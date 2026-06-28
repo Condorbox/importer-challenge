@@ -1,4 +1,7 @@
-import { parseCsvBuffer, CsvValidationError } from "../utils/csv_parser";
+import {
+  parseCsvBuffer,
+  CsvValidationError,
+} from "../services/csv_parser.service";
 import { CsvParseOptions } from "../types/csv.types";
 
 // Mock UUID

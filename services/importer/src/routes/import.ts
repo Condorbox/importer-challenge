@@ -3,7 +3,10 @@ import rateLimit from "express-rate-limit";
 import { upload } from "../middleware/upload";
 import { RATE_LIMIT_CONFIG } from "../config";
 import { ApiResponse, ParsedCsvResult } from "../types/csv.types";
-import { CsvValidationError, parseCsvBuffer } from "../utils/csv_parser";
+import {
+  CsvValidationError,
+  parseCsvBuffer,
+} from "../services/csv_parser.service";
 
 export const importRouter = Router();
 

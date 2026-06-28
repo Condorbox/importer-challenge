@@ -30,7 +30,8 @@
     "eslint-fix": "npx eslint . --fix",
     "prettier": "npx prettier --write .",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "express": "^5.2.1",

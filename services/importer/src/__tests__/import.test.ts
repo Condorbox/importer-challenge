@@ -1,7 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import request from "supertest";
 import { importRouter } from "../routes/import";
-import * as csvParser from "../utils/csv_parser";
+import * as csvParser from "../services/csv_parser.service";
 
 // Mock Config
 jest.mock("../config", () => ({

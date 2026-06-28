@@ -6,9 +6,11 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^26.0.1",
     "@types/papaparse": "^5.5.2",
+    "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
+    "drizzle-kit": "^1.0.0-rc.4",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
@@ -21,6 +23,7 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.0"
   },
@@ -31,15 +34,21 @@
     "prettier": "npx prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^1.0.0-rc.4",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "jiti": "^2.7.0",
     "multer": "^2.2.0",
     "papaparse": "^5.5.4",
+    "pg": "^8.22.0",
     "uuid": "^14.0.1"
   }
 }

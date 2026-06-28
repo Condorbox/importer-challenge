@@ -1,39 +1,35 @@
 import multer, { FileFilterCallback } from "multer";
 import { Request } from "express";
+import { CSV_PARSE_OPTIONS, UPLOAD_CONFIG } from "../config";
 
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
-
-/**
- * We store the upload in memory (as a Buffer) so we can pipe it
- * straight into the CSV parser without touching the filesystem.
- */
-const storage = multer.memoryStorage();
-
-function csvFilter(
-  _req: Request,
-  file: Express.Multer.File,
-  callback: FileFilterCallback,
-): void {
-  const allowedMimeTypes = [
-    "text/csv",
-    "application/csv",
-    "text/plain",
-    "application/vnd.ms-excel",
-  ];
-
-  const hasValidMime = allowedMimeTypes.includes(file.mimetype);
-  const hasValidExtension = file.originalname.toLowerCase().endsWith(".csv");
-
-  hasValidMime || hasValidExtension
-    ? callback(null, true)
-    : callback(
-        new Error(`Only CSV files are accepted. Received: ${file.mimetype}`),
-      );
-}
-
-// Re-configured Multer instance for the import endpoint
 export const upload = multer({
-  storage,
-  limits: { fileSize: MAX_FILE_SIZE_BYTES },
-  fileFilter: csvFilter,
-});
+  /**
+  * We store the upload in memory (as a Buffer) so we can pipe it
+  * straight into the CSV parser without touching the filesystem.
+  */
+  storage: multer.memoryStorage(),
+ 
+  limits: {
+    fileSize: CSV_PARSE_OPTIONS.maxFileSizeBytes,
+    files: 1,
+  },
+ 
+  fileFilter: (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    // Check MIME type
+    const hasValidMime = UPLOAD_CONFIG.allowedMimeTypes.includes(
+      file.mimetype as (typeof UPLOAD_CONFIG.allowedMimeTypes)[number]
+    );
+ 
+    // Check file extension (case-insensitive)
+    const hasValidExtension = file.originalname.toLowerCase().endsWith(".csv");
+ 
+    if (!hasValidMime || !hasValidExtension) {
+      // Passing an Error to cb rejects the file and sends a 400
+      cb(new Error(`Invalid file type. Only .csv files are accepted.`));
+      return;
+    }
+ 
+    cb(null, true);
+  },
+}).single(UPLOAD_CONFIG.fieldName);
+

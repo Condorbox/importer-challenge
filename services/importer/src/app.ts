@@ -1,13 +1,17 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import { importRouter } from "./routes/import";
+import helmet from "helmet";
 
 export function createApp(): Application {
   const app = express();
 
   app.use(express.json());
 
+  // Sets X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, etc.
+  app.use(helmet());
+
   app.get("/health", (_req, res) => {
-    res.status(200).json({ status: "ok" });
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString()});
   });
 
   app.use("/import", importRouter);

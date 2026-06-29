@@ -28,7 +28,7 @@
     "typescript-eslint": "^8.62.0"
   },
   "scripts": {
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "ts-node-dev -r dotenv/config --respawn src/index.ts",
     "eslint-check-only": "npx eslint .",
     "eslint-fix": "npx eslint . --fix",
     "prettier": "npx prettier --write .",

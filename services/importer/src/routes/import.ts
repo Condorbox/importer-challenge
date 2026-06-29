@@ -7,8 +7,15 @@ import {
   CsvValidationError,
   parseCsvBuffer,
 } from "../services/csv_parser.service";
+import { persistImport } from "../services/import.service";
+import { db } from "../db/client";
 
 export const importRouter = Router();
+
+export interface PersistedUploadResponse extends ParsedCsvResult {
+  importId: number;
+  persisted: boolean;
+}
 
 const uploadRateLimit = rateLimit({
   windowMs: RATE_LIMIT_CONFIG.windowMs,
@@ -39,7 +46,8 @@ importRouter.post(
     });
   },
 
-  (req: Request, res: Response): void => {
+  // Make handler async
+  async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
       const response: ApiResponse<never> = {
         success: false,
@@ -53,9 +61,17 @@ importRouter.post(
     try {
       const result = parseCsvBuffer(req.file.buffer, req.file.originalname);
 
-      const response: ApiResponse<ParsedCsvResult> = {
+      const importResult = await persistImport(result, db);
+
+      const responseData: PersistedUploadResponse = {
+        ...result,
+        importId: importResult.importRow.id,
+        persisted: true,
+      };
+
+      const response: ApiResponse<PersistedUploadResponse> = {
         success: true,
-        data: result,
+        data: responseData,
       };
 
       // 207 Multi-Status when some rows were skipped due to format errors
@@ -71,8 +87,11 @@ importRouter.post(
         return;
       }
 
-      // Unexpected error
-      throw err;
+      const response: ApiResponse<never> = {
+        success: false,
+        error: err instanceof Error ? err.message : "Internal Server Error",
+      };
+      res.status(500).json(response);
     }
   },
 );

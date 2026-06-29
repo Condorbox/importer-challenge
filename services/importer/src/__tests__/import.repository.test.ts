@@ -175,9 +175,9 @@ describeIfDb("ImportRepository (integration)", () => {
     });
 
     it("throws when the import does not exist", async () => {
-      await expect(
-        repo.updateImportStatus(999999, "failed"),
-      ).rejects.toThrow(/not found/);
+      await expect(repo.updateImportStatus(999999, "failed")).rejects.toThrow(
+        /not found/,
+      );
     });
   });
 

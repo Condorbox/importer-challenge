@@ -3,8 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { Database } from "../../db/client";
 import { relations } from "../../db/relations";
-import "dotenv/config"
-
+import "dotenv/config";
 
 export interface TestDb {
   db: Database;
@@ -33,9 +32,9 @@ export async function setupTestDb(): Promise<TestDb> {
   } catch (err) {
     await pool.end();
     throw new Error(
-      `TEST_DATABASE_URL is set but Postgres is unreachable at that URL. ` +
-        `Start the test DB (e.g. \`docker compose up -d\`) and run migrations ` +
-        `(\`npm run db:migrate\`) against TEST_DATABASE_URL before running this suite.\n` +
+      "TEST_DATABASE_URL is set but Postgres is unreachable at that URL. " +
+        "Start the test DB (e.g. `docker compose up -d`) and run migrations " +
+        "(`npm run db:migrate`) against TEST_DATABASE_URL before running this suite.\n" +
         `Underlying error: ${(err as Error).message}`,
     );
   }
@@ -45,8 +44,8 @@ export async function setupTestDb(): Promise<TestDb> {
   } catch (err) {
     await pool.end();
     throw new Error(
-      `TEST_DATABASE_URL is reachable but missing expected tables. ` +
-        `Run \`npm run db:migrate\` against TEST_DATABASE_URL before running this suite.\n` +
+      "TEST_DATABASE_URL is reachable but missing expected tables. " +
+        "Run `npm run db:migrate` against TEST_DATABASE_URL before running this suite.\n" +
         `Underlying error: ${(err as Error).message}`,
     );
   }
@@ -62,9 +61,7 @@ export async function setupTestDb(): Promise<TestDb> {
         tableNames.map((name) => sql.identifier(name)),
         sql.raw(", "),
       );
-      await db.execute(
-        sql`TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`,
-      );
+      await db.execute(sql`TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`);
     },
   };
 }

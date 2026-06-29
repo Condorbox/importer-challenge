@@ -133,9 +133,12 @@ export async function createImportWithData(
     validRows: number;
     skippedRows: number;
   },
-): Promise<{ importRow: Import; columns: ImportColumn[]; recordCount: number }> {
+): Promise<{
+  importRow: Import;
+  columns: ImportColumn[];
+  recordCount: number;
+}> {
   return db.transaction(async (tx) => {
-
     const repo = new ImportRepository(tx);
 
     const importRow = await repo.createImport(params.filename);

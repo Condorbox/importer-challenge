@@ -10,7 +10,7 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import type { CsvRow } from "../types/csv.types";
- 
+
 /**
  * ── Design summary (JSONB hybrid) ────────────────────────────────────────
  *
@@ -30,33 +30,33 @@ import type { CsvRow } from "../types/csv.types";
  * why a typed-EAV alternative was considered and rejected.
  * ──────────────────────────────────────────────────────────────────────────
  */
- 
+
 export const importStatusEnum = pgEnum("import_status", [
   "processing",
   "completed",
   "failed",
 ]);
- 
+
 export const columnTypeEnum = pgEnum("column_type", [
   "text",
   "numeric",
   "date",
 ]);
- 
+
 export const imports = pgTable("imports", {
   id: serial("id").primaryKey(),
   filename: text("filename").notNull(),
   status: importStatusEnum("status").notNull().default("processing"),
- 
+
   totalRows: integer("total_rows").notNull().default(0),
   validRows: integer("valid_rows").notNull().default(0),
   skippedRows: integer("skipped_rows").notNull().default(0),
- 
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });
- 
+
 /**
  * One row per detected CSV column, scoped to a single import. `position`
  * preserves the original column order for the API/UI; `detectedType`
@@ -74,16 +74,16 @@ export const importColumns = pgTable(
     importId: integer("import_id")
       .notNull()
       .references(() => imports.id, { onDelete: "cascade" }),
- 
+
     name: text("name").notNull(),
     position: integer("position").notNull(),
     detectedType: columnTypeEnum("detected_type").notNull().default("text"),
- 
+
     // Populated only when detectedType = 'numeric'. Stored as numeric
     // (not double) to avoid floating point drift on aggregation.
     minValue: numeric("min_value", { mode: "number" }),
     maxValue: numeric("max_value", { mode: "number" }),
- 
+
     // Count of cells in this column that failed to coerce to the detected
     // type (e.g. "N/A" in an otherwise-numeric column). The raw string is
     // still preserved in records.data; this is purely a quality signal.
@@ -96,7 +96,7 @@ export const importColumns = pgTable(
     index("import_columns_import_id_name_idx").on(table.importId, table.name),
   ],
 );
- 
+
 export const records = pgTable(
   "records",
   {
@@ -104,18 +104,18 @@ export const records = pgTable(
     importId: integer("import_id")
       .notNull()
       .references(() => imports.id, { onDelete: "cascade" }),
- 
+
     // 1-based position of this row within the original CSV (header = row 1,
     // so the first data row is 2) — mirrors the row numbers already used in
     // csv-parser's RowError, so error messages and stored rows line up.
     rowNumber: integer("row_number").notNull(),
- 
+
     // The full row, keyed by header name, values as parsed/sanitized
     // strings — exactly CsvRow's shape. Numeric/date interpretation is
     // applied at query time via casts driven by import_columns.detectedType,
     // never baked into storage, so the raw value is never lost.
     data: jsonb("data").$type<CsvRow>().notNull(),
- 
+
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -129,11 +129,10 @@ export const records = pgTable(
     index("records_data_gin_idx").using("gin", table.data),
   ],
 );
- 
+
 export type Import = typeof imports.$inferSelect;
 export type NewImport = typeof imports.$inferInsert;
 export type ImportColumn = typeof importColumns.$inferSelect;
 export type NewImportColumn = typeof importColumns.$inferInsert;
 export type Record_ = typeof records.$inferSelect;
 export type NewRecord = typeof records.$inferInsert;
- 

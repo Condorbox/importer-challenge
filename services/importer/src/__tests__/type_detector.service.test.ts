@@ -10,9 +10,7 @@ describe("detectColumnType", () => {
     });
 
     it("detects a column with decimals as numeric", () => {
-      expect(detectColumnType(["1.5", "2.75", "-3.2", "0.0"])).toBe(
-        "numeric",
-      );
+      expect(detectColumnType(["1.5", "2.75", "-3.2", "0.0"])).toBe("numeric");
     });
 
     it("detects a column with mixed integers and decimals as numeric", () => {
@@ -40,9 +38,9 @@ describe("detectColumnType", () => {
 
   describe("date columns (ISO 8601 only)", () => {
     it("detects an all-ISO-date column as date", () => {
-      expect(
-        detectColumnType(["2024-01-15", "2024-02-20", "2023-12-31"]),
-      ).toBe("date");
+      expect(detectColumnType(["2024-01-15", "2024-02-20", "2023-12-31"])).toBe(
+        "date",
+      );
     });
 
     it("detects ISO datetime strings (with time component) as date", () => {
@@ -68,10 +66,7 @@ describe("detectColumnType", () => {
     });
 
     it("tolerates a small fraction of non-date cells", () => {
-      const values = [
-        ...Array(19).fill("2024-01-01"),
-        "not-a-date",
-      ];
+      const values = [...Array(19).fill("2024-01-01"), "not-a-date"];
       expect(detectColumnType(values)).toBe("date");
     });
   });

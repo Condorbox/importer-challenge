@@ -1,4 +1,3 @@
-
 export type DetectedColumnType = "text" | "numeric" | "date";
 
 /**
@@ -55,8 +54,7 @@ export function detectColumnType(values: string[]): DetectedColumnType {
     return "text";
   }
 
-  const numericRatio =
-    nonEmpty.filter(isNumericCell).length / nonEmpty.length;
+  const numericRatio = nonEmpty.filter(isNumericCell).length / nonEmpty.length;
   if (numericRatio >= TYPE_DETECTION_THRESHOLD) {
     return "numeric";
   }

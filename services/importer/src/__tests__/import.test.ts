@@ -76,7 +76,6 @@ function makeDefaultImportResult(): ImportResult {
   };
 }
 
-
 // Tests
 describe("POST /import/upload", () => {
   let app: Application;
@@ -85,22 +84,20 @@ describe("POST /import/upload", () => {
     app = buildApp();
     jest.restoreAllMocks(); // Clears any spyOn implementations between tests
 
-    
     (importService.persistImport as jest.Mock).mockResolvedValue(
       makeDefaultImportResult(),
     );
   });
-  
 
   // Happy path
   describe("200 – successful upload", () => {
     it("returns success:true, parsed data, and persistence details", async () => {
       const csvContent = "id,name\n1,Alice\n2,Bob";
- 
+
       const res = await request(app)
         .post("/import/upload")
         .attach("file", Buffer.from(csvContent), "test.csv");
- 
+
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(importService.persistImport).toHaveBeenCalledTimes(1);
@@ -116,11 +113,11 @@ describe("POST /import/upload", () => {
     it("returns 207 when some rows are skipped and still persists", async () => {
       // Row 2 is missing a column, which triggers a skip in your parser
       const csvContent = "id,name\n1,Alice\n2\n3,Bob";
- 
+
       const res = await request(app)
         .post("/import/upload")
         .attach("file", Buffer.from(csvContent), "test.csv");
- 
+
       expect(res.status).toBe(207);
       expect(res.body.success).toBe(true);
       expect(res.body.data.skippedRows).toBe(1);
@@ -218,20 +215,19 @@ describe("POST /import/upload", () => {
       (importService.persistImport as jest.Mock).mockRejectedValueOnce(
         new Error("Database connection lost"),
       );
- 
+
       const res = await request(app)
         .post("/import/upload")
         .attach("file", Buffer.from("id\n1"), "test.csv");
- 
+
       expect(res.status).toBe(500);
       expect(res.body.success).toBe(false);
       expect(res.body.error).toMatch(/Database connection lost/i);
-
     });
   });
 });
 
-// Integration test suite 
+// Integration test suite
 //
 // These tests run against a real database. They are skipped automatically
 // when TEST_DATABASE_URL is not set, so the unit suite above stays fast
@@ -243,35 +239,35 @@ describe("POST /import/upload", () => {
 //   TEST_DATABASE_URL=postgres://... jest --testPathPatterns="import.test"
 
 const describeIfDb = process.env.TEST_DATABASE_URL ? describe : describe.skip;
- 
+
 describeIfDb("POST /import/upload (integration — real DB)", () => {
   let app: Application;
- 
+
   beforeEach(() => {
     app = buildApp();
     jest.clearAllMocks();
   });
- 
+
   // TODO: truncate imports / import_columns / records before each test using
   // setupTestDb().truncateAll([...]) once the test-db helper is wired in here.
- 
+
   it("persists CSV data and returns a real database-assigned importId", async () => {
     const csvContent = "country,co2\nSpain,120.5\nFrance,98.2";
- 
+
     const res = await request(app)
       .post("/import/upload")
       .attach("file", Buffer.from(csvContent), "emissions.csv");
- 
+
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.persisted).toBe(true);
-    
+
     expect(typeof res.body.data.importId).toBe("number");
     expect(res.body.data.importId).toBeGreaterThan(0);
     expect(res.body.data.filename).toBe("emissions.csv");
     expect(res.body.data.totalRows).toBe(2);
     expect(res.body.data.validRows).toBe(2);
- 
+
     // TODO: query the DB directly to confirm the row exists:
     // const { setupTestDb } = await import("./__tests__/helpers/test_db");
     // const { db: testDb, teardown } = await setupTestDb();

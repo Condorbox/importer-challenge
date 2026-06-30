@@ -4,8 +4,8 @@ import {
   DetectedColumnType,
 } from "./type_detector.service";
 import { createImportWithData } from "../repositories/import.repository";
-import type { Database } from "../db/client";
-import type { Import, ImportColumn } from "../db/schema";
+import type { Database } from "@shared/db/client";
+import type { Import, ImportColumn } from "@shared/db/schema";
 import type { ParsedCsvResult, CsvRow } from "../types/csv.types";
 
 export interface ImportResult {

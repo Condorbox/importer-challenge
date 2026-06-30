@@ -6,6 +6,10 @@ const config: Config = {
   roots: ["<rootDir>/src"],
   testMatch: ["**/*.test.ts"],
   clearMocks: true,
+  moduleDirectories: ["node_modules", "<rootDir>/node_modules"],
+  moduleNameMapper: {
+    "^@shared/(.*)$": "<rootDir>/../../shared/src/$1",
+  },
   transform: {
     "^.+\\.ts$": [
       "ts-jest",

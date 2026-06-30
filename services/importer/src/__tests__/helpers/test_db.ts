@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { Database } from "../../db/client";
-import { relations } from "../../db/relations";
+import { Database } from "@shared/db/client";
+import { relations } from "@shared/db/relations";
 import "dotenv/config";
 
 export interface TestDb {

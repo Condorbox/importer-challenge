@@ -26,7 +26,7 @@ jest.mock("../config", () => ({
   },
 }));
 
-jest.mock("../db/client", () => ({ db: {} }));
+jest.mock("@shared/db/client", () => ({ db: {} }));
 
 jest.mock("../repositories/import.repository", () => ({
   createImportWithData: jest.fn(),

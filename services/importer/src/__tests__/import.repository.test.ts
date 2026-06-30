@@ -2,7 +2,7 @@ import {
   ImportRepository,
   createImportWithData,
 } from "../repositories/import.repository";
-import type { NewImportColumn, NewRecord } from "../db/schema";
+import type { NewImportColumn, NewRecord } from "@shared/db/schema";
 import { isTestDbConfigured, setupTestDb, TestDb } from "./helpers/test_db";
 
 const describeIfDb = isTestDbConfigured() ? describe : describe.skip;

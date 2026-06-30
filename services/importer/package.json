@@ -28,16 +28,16 @@
     "typescript-eslint": "^8.62.0"
   },
   "scripts": {
-    "dev": "ts-node-dev -r dotenv/config --respawn src/index.ts",
+    "dev": "ts-node-dev -r ./register-module-paths.cjs -r dotenv/config -r tsconfig-paths/register --respawn src/index.ts",
     "eslint-check-only": "npx eslint .",
     "eslint-fix": "npx eslint . --fix",
     "prettier": "npx prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "node -r ./register-module-paths.cjs ./node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node -r ./register-module-paths.cjs ./node_modules/drizzle-kit/bin.cjs migrate",
+    "db:studio": "node -r ./register-module-paths.cjs ./node_modules/drizzle-kit/bin.cjs studio"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

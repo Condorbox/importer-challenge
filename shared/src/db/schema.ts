@@ -9,7 +9,8 @@ import {
   index,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import type { CsvRow } from "../types/csv.types";
+
+export type RecordData = Record<string, string>;
 
 /**
  * ── Design summary (JSONB hybrid) ────────────────────────────────────────
@@ -111,10 +112,10 @@ export const records = pgTable(
     rowNumber: integer("row_number").notNull(),
 
     // The full row, keyed by header name, values as parsed/sanitized
-    // strings — exactly CsvRow's shape. Numeric/date interpretation is
+    // strings. Numeric/date interpretation is
     // applied at query time via casts driven by import_columns.detectedType,
     // never baked into storage, so the raw value is never lost.
-    data: jsonb("data").$type<CsvRow>().notNull(),
+    data: jsonb("data").$type<RecordData>().notNull(),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

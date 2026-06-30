@@ -8,7 +8,7 @@ import {
   parseCsvBuffer,
 } from "../services/csv_parser.service";
 import { persistImport } from "../services/import.service";
-import { db } from "../db/client";
+import { db } from "@shared/db/client";
 
 export const importRouter = Router();
 

@@ -1,4 +1,4 @@
-import { Import, ImportColumn } from "../db/schema";
+import { Import, ImportColumn } from "@shared/db/schema";
 import {
   buildColumnStats,
   PersistFn,
@@ -352,7 +352,7 @@ describe("persistImport", () => {
   it("detects the correct type for each column", async () => {
     await persistImport(PARSED_NUMERIC, makeStubDb(), mockPersistFn);
 
-    const [, { columns }] = mockPersistFn.mock.calls[0] as [
+    const [, { columns }] = mockPersistFn.mock.calls[0] as unknown as [
       unknown,
       { columns: PersistedColumn[] },
     ];
@@ -366,7 +366,7 @@ describe("persistImport", () => {
   it("sends null minValue/maxValue for non-numeric columns, actual values for numeric", async () => {
     await persistImport(PARSED_NUMERIC, makeStubDb(), mockPersistFn);
 
-    const [, { columns }] = mockPersistFn.mock.calls[0] as [
+    const [, { columns }] = mockPersistFn.mock.calls[0] as unknown as [
       unknown,
       { columns: PersistedColumn[] },
     ];

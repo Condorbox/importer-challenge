@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import type { Database } from "../db/client";
+import type { Database } from "@shared/db/client";
 import {
   imports,
   importColumns,
@@ -9,7 +9,7 @@ import {
   type ImportColumn,
   type NewImportColumn,
   type NewRecord,
-} from "../db/schema";
+} from "@shared/db/schema";
 
 /**
  * Accepted by every method below instead of the concrete `Database` type
@@ -138,7 +138,7 @@ export async function createImportWithData(
   columns: ImportColumn[];
   recordCount: number;
 }> {
-  return db.transaction(async (tx) => {
+  return db.transaction(async (tx: DbOrTx) => {
     const repo = new ImportRepository(tx);
 
     const importRow = await repo.createImport(params.filename);

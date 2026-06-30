@@ -1,16 +1,29 @@
 {
   "scripts": {
     "dev": "node -r ./register-module-paths.cjs ../importer/node_modules/tsx/dist/cli.cjs watch src/index.ts",
-    "typecheck": "node ../importer/node_modules/typescript/bin/tsc --noEmit"
+    "typecheck": "node ../importer/node_modules/typescript/bin/tsc --noEmit",
+    "eslint-check-only": "npx eslint .",
+    "eslint-fix": "npx eslint . --fix",
+    "prettier": "npx prettier --write .",
+    "test": "node -r ./register-module-paths.cjs ../importer/node_modules/jest/bin/jest.js",
+    "test:watch": "node -r ./register-module-paths.cjs ../importer/node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node -r ./register-module-paths.cjs ../importer/node_modules/jest/bin/jest.js --coverage"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "express": "^5.2.1",
-    "helmet": "^8.2.0"
+    "helmet": "^8.2.0",
+    "jiti": "^2.7.0",
+    "typescript-eslint": "^8.62.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.0.1",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "../../",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@shared/*": ["../../shared/src/*"],
+      "drizzle-orm": ["../importer/node_modules/drizzle-orm"],
+      "drizzle-orm/*": ["../importer/node_modules/drizzle-orm/*"],
+      "express": ["../importer/node_modules/@types/express"],
+      "helmet": ["../importer/node_modules/helmet"]
+    },
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["../importer/node_modules/@types"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "../../shared/src/**/*"]
+}

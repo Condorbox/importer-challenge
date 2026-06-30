@@ -11,7 +11,11 @@ export function createApp(): Application {
   app.use(helmet());
 
   app.get("/health", (_req, res) => {
-    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+    res.status(200).json({
+      service: "import",
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    });
   });
 
   app.use("/import", importRouter);

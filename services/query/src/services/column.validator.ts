@@ -1,5 +1,9 @@
 import type { ImportColumn } from "@shared/db/schema";
-import type { FilterOperator, ParsedFilter, ParsedSort } from "../types/query.types";
+import type {
+  FilterOperator,
+  ParsedFilter,
+  ParsedSort,
+} from "../types/query.types";
 
 /**
  * Thrown when a filter or sort field doesn't match any column actually

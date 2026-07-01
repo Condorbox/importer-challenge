@@ -141,9 +141,7 @@ describe("validateFilters", () => {
       expect(() => validateFilters(filters, COLUMNS)).toThrow(
         FilterTypeMismatchError,
       );
-      expect(() => validateFilters(filters, COLUMNS)).toThrow(
-        /country\[gte\]/,
-      );
+      expect(() => validateFilters(filters, COLUMNS)).toThrow(/country\[gte\]/);
     });
 
     it("throws FilterTypeMismatchError for lte against a text column", () => {
@@ -174,7 +172,10 @@ describe("validateFilters", () => {
     });
 
     it("collects multiple type mismatches in one error", () => {
-      const filters = [filter("country", "gte", "S"), filter("country", "lte", "Z")];
+      const filters = [
+        filter("country", "gte", "S"),
+        filter("country", "lte", "Z"),
+      ];
       expect(() => validateFilters(filters, COLUMNS)).toThrow(
         /country\[gte\].*country\[lte\]/,
       );

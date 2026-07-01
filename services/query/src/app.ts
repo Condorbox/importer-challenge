@@ -19,7 +19,7 @@ export function createApp(): Application {
   app.use("/datasets", recordsRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error("[error]", err.message);
+    console.error("[error]", err.message, err.cause);
     res.status(500).json({ error: "An unexpected error occurred." });
   });
 

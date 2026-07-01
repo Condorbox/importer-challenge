@@ -6,17 +6,21 @@ import type {
   ParsedSort,
 } from "../types/query.types";
 
-/** Postgres cast suffix for a JSONB ->> text extraction, per detected type. */
-function castSuffix(detectedType: ImportColumn["detectedType"]): SQL | null {
-  switch (detectedType) {
-    case "numeric":
-      return sql.raw("::numeric");
-    case "date":
-      return sql.raw("::timestamptz");
-    case "text":
-      return null;
-  }
-}
+/**
+ * Postgres evaluates `(data ->> 'field')::numeric` per scanned row before
+ * applying the WHERE comparison, so a single non-numeric value ("" or "NA")
+ * will raise `invalid input syntax for type numeric` and abort the query.
+ *
+ * So only cast when the extracted text matches the importer’s
+ * detection pattern, otherwise we return SQL NULL. This prevents runtime
+ * cast errors and makes non-conforming cells behave as absent values.
+ * 
+ * TODO Maybe export numeric/date regexes  type-detection patterns from
+ * services/importer/src/services/type_detector.service.ts
+ * or share in a util file
+ */
+const NUMERIC_FORMAT = String.raw`^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$`;
+const ISO_DATE_FORMAT = String.raw`^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$`;
 
 /** `records.data ->> 'field'` - the raw text value, uncast. */
 function jsonField(field: string): SQL {
@@ -27,9 +31,16 @@ function castedField(
   field: string,
   detectedType: ImportColumn["detectedType"],
 ): SQL {
-  const suffix = castSuffix(detectedType);
   const raw = jsonField(field);
-  return suffix ? sql`(${raw})${suffix}` : raw;
+
+  switch (detectedType) {
+    case "numeric":
+      return sql`(CASE WHEN ${raw} ~ ${NUMERIC_FORMAT} THEN (${raw})::numeric ELSE NULL END)`;
+    case "date":
+      return sql`(CASE WHEN ${raw} ~ ${ISO_DATE_FORMAT} THEN (${raw})::timestamptz ELSE NULL END)`;
+    case "text":
+      return raw;
+  }
 }
 
 /** Maps a comparison operator to its raw SQL symbol. Never fed user input. */

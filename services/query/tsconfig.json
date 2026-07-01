@@ -12,6 +12,8 @@
       "drizzle-orm": ["../importer/node_modules/drizzle-orm"],
       "drizzle-orm/*": ["../importer/node_modules/drizzle-orm/*"],
       "express": ["../importer/node_modules/@types/express"],
+      "express-rate-limit": ["../importer/node_modules/express-rate-limit"],
+      "supertest": ["../importer/node_modules/@types/supertest"],
       "helmet": ["../importer/node_modules/helmet"]
     },
     "strict": true,

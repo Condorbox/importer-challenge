@@ -2,12 +2,13 @@ import { eq, sql, type SQL } from "drizzle-orm";
 import type { Database } from "@shared/db/client";
 import {
   importColumns,
+  imports,
   records,
   type ImportColumn,
   type Record_ as RecordRow,
 } from "@shared/db/schema";
 import type { ParsedQuery } from "../types/query.types";
-import { buildRecordQuery } from "../services/record_query.service";
+import { buildRecordQuery } from "../services/record_query.builder";
 
 type DbOrTx = Omit<Database, "$client">;
 
@@ -24,6 +25,16 @@ export class RecordRepository {
       .select()
       .from(importColumns)
       .where(eq(importColumns.importId, importId));
+  }
+
+  async importExists(importId: number): Promise<boolean> {
+    const rows = await this.db
+      .select({ id: imports.id })
+      .from(imports)
+      .where(eq(imports.id, importId))
+      .limit(1);
+
+    return rows.length > 0;
   }
 
   async findRecords(

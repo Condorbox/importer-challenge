@@ -1,7 +1,7 @@
 import type { SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 import type { ImportColumn } from "@shared/db/schema";
-import { buildRecordQuery } from "../services/record_query.service";
+import { buildRecordQuery } from "../services/record_query.builder";
 import type { ParsedQuery } from "../types/query.types";
 
 const dialect = new PgDialect();

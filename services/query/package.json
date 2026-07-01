@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "node -r ./register-module-paths.cjs ../importer/node_modules/tsx/dist/cli.cjs watch src/index.ts",
+    "dev": "ts-node-dev -r ./register-module-paths.cjs -r dotenv/config -r tsconfig-paths/register --respawn src/index.ts",
     "typecheck": "node ../importer/node_modules/typescript/bin/tsc --noEmit",
     "eslint-check-only": "npx eslint .",
     "eslint-fix": "npx eslint . --fix",
@@ -14,6 +14,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "express": "^5.2.1",
+    "express-rate-limit": "8.5.2",
     "helmet": "^8.2.0",
     "jiti": "^2.7.0",
     "typescript-eslint": "^8.62.1"

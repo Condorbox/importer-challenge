@@ -10,7 +10,10 @@ import type {
  * present in the import.
  */
 export class UnknownFieldError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly fields: string[] = [],
+  ) {
     super(message);
     this.name = "UnknownFieldError";
   }
@@ -94,9 +97,11 @@ function assertKnownFields(
   }
 
   const available = [...columnsByName.keys()];
+  const fields = [...unknown];
   throw new UnknownFieldError(
-    `Unknown field(s): ${[...unknown].join(", ")}. ` +
+    `Unknown field(s): ${fields.join(", ")}. ` +
       `Available fields: ${available.length ? available.join(", ") : "(none)"}.`,
+    fields,
   );
 }
 

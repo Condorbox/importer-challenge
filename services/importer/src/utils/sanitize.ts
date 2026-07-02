@@ -19,12 +19,15 @@ const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
  */
 const CONTROL_CHARS = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
+// TODO 
+const NUMERIC_VALUE = /^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/;
+
 export function sanitizeCell(value: string): string {
   // Remove invisible control characters
   let clean = value.replace(CONTROL_CHARS, "");
 
   // Neutralise formula-injection triggers
-  if (FORMULA_TRIGGER.test(clean)) {
+  if (FORMULA_TRIGGER.test(clean) && !NUMERIC_VALUE.test(clean)) {
     clean = `'${clean}`;
   }
 

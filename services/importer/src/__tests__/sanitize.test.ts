@@ -78,6 +78,22 @@ describe("sanitizeCell", () => {
       expect(sanitizeCell("@SUM(A1:A10)")).toBe("'@SUM(A1:A10)");
     });
   });
+
+  describe("legitimate numeric values are not treated as formulas", () => {
+    test.each(["-5.06", "+42", "-1e10", "-.5", "-0"])(
+      "does not quote '%s'",
+      (value) => {
+        expect(sanitizeCell(value)).toBe(value);
+      },
+    );
+
+    test.each(["--5", "-5.06.1", "-2+3"])(
+      "still quotes malformed near-numbers like '%s'",
+      (value) => {
+        expect(sanitizeCell(value)).toBe(`'${value}`);
+      },
+    );
+  });
 });
 
 describe("normaliseCellLength", () => {

@@ -219,4 +219,65 @@ describe("GET /datasets/:importId/records", () => {
       expect(res.body).toEqual({ error: "An unexpected error occurred." });
     });
   });
+
+  describe("pagination envelope math", () => {
+    it("computes hasNextPage=true and hasPreviousPage=true for a middle page", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [makeRecord()],
+        total: 25, // 3 pages at limit=10
+      });
+
+      const res = await request(app).get("/datasets/1/records?page=2&limit=10");
+
+      expect(res.body.data.pagination).toEqual({
+        page: 2,
+        limit: 10,
+        total: 25,
+        totalPages: 3,
+        hasNextPage: true,
+        hasPreviousPage: true,
+      });
+    });
+
+    it("computes hasNextPage=false on the last page", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [makeRecord()],
+        total: 25,
+      });
+
+      const res = await request(app).get("/datasets/1/records?page=3&limit=10");
+
+      expect(res.body.data.pagination).toEqual(
+        expect.objectContaining({ page: 3, hasNextPage: false, hasPreviousPage: true }),
+      );
+    });
+
+    it("computes hasPreviousPage=false on page 1 even when more pages exist", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [makeRecord()],
+        total: 25,
+      });
+
+      const res = await request(app).get("/datasets/1/records?page=1&limit=10");
+
+      expect(res.body.data.pagination).toEqual(
+        expect.objectContaining({ page: 1, hasNextPage: true, hasPreviousPage: false }),
+      );
+    });
+
+    it("returns a valid, empty envelope for a page beyond the last page", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [],
+        total: 25,
+      });
+
+      const res = await request(app).get("/datasets/1/records?page=10&limit=10");
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.records).toEqual([]);
+      expect(res.body.data.pagination).toEqual(
+        expect.objectContaining({ page: 10, totalPages: 3, hasNextPage: false, hasPreviousPage: true }),
+      );
+    });
+  });
 });

@@ -139,7 +139,10 @@ describeIfDb("RecordRepository (integration) — guarded numeric cast", () => {
     return importId;
   }
 
-  async function findAll(importId: number, sort: { field: string; direction: "asc" | "desc" }) {
+  async function findAll(
+    importId: number,
+    sort: { field: string; direction: "asc" | "desc" },
+  ) {
     const columns = await repo.findColumnsByImportId(importId);
     const columnsByName = new Map(columns.map((c) => [c.name, c]));
     return repo.findRecords(
@@ -152,52 +155,64 @@ describeIfDb("RecordRepository (integration) — guarded numeric cast", () => {
   describe("sort direction", () => {
     it("sorts a numeric column ascending, with the non-conforming (NULL) value last", async () => {
       const importId = await seedEmissionsFixture();
-      const result = await findAll(importId, { field: "co2_emissions", direction: "asc" });
+      const result = await findAll(importId, {
+        field: "co2_emissions",
+        direction: "asc",
+      });
 
       expect(result.records.map((r) => r.data.country)).toEqual([
         "Netherlands", // 60.0
-        "Italy",       // 75.3
-        "France",      // 98.2
-        "Spain",       // 120.5
-        "Belgium",     // 150.0
-        "Germany",     // 210.0
-        "Portugal",    // "" -> NULL, sorts last on ASC
+        "Italy", // 75.3
+        "France", // 98.2
+        "Spain", // 120.5
+        "Belgium", // 150.0
+        "Germany", // 210.0
+        "Portugal", // "" -> NULL, sorts last on ASC
       ]);
     });
 
     it("sorts a numeric column descending, with the non-conforming (NULL) value first", async () => {
       const importId = await seedEmissionsFixture();
-      const result = await findAll(importId, { field: "co2_emissions", direction: "desc" });
+      const result = await findAll(importId, {
+        field: "co2_emissions",
+        direction: "desc",
+      });
 
       expect(result.records.map((r) => r.data.country)).toEqual([
-        "Portugal",    // "" -> NULL, sorts first on DESC
-        "Germany",     // 210.0
-        "Belgium",     // 150.0
-        "Spain",       // 120.5
-        "France",      // 98.2
-        "Italy",       // 75.3
+        "Portugal", // "" -> NULL, sorts first on DESC
+        "Germany", // 210.0
+        "Belgium", // 150.0
+        "Spain", // 120.5
+        "France", // 98.2
+        "Italy", // 75.3
         "Netherlands", // 60.0
       ]);
     });
 
     it("sorts a date column ascending as real dates, not lexicographic text", async () => {
       const importId = await seedEmissionsFixture();
-      const result = await findAll(importId, { field: "recorded_at", direction: "asc" });
+      const result = await findAll(importId, {
+        field: "recorded_at",
+        direction: "asc",
+      });
 
       expect(result.records.map((r) => r.data.country)).toEqual([
-        "France",       // 2023-06-10
-        "Netherlands",  // 2023-09-18
-        "Italy",        // 2023-11-05
-        "Belgium",      // 2024-01-01
-        "Spain",        // 2024-01-15
-        "Portugal",     // 2024-02-01
-        "Germany",      // 2024-03-22
+        "France", // 2023-06-10
+        "Netherlands", // 2023-09-18
+        "Italy", // 2023-11-05
+        "Belgium", // 2024-01-01
+        "Spain", // 2024-01-15
+        "Portugal", // 2024-02-01
+        "Germany", // 2024-03-22
       ]);
     });
 
     it("sorts a text column ascending (the uncast branch of castedField)", async () => {
       const importId = await seedEmissionsFixture();
-      const result = await findAll(importId, { field: "country", direction: "asc" });
+      const result = await findAll(importId, {
+        field: "country",
+        direction: "asc",
+      });
 
       expect(result.records.map((r) => r.data.country)).toEqual([
         "Belgium",
@@ -235,10 +250,14 @@ describeIfDb("RecordRepository (integration) — guarded numeric cast", () => {
       );
 
       expect(page1.records.map((r) => r.data.country)).toEqual([
-        "Belgium", "France", "Germany",
+        "Belgium",
+        "France",
+        "Germany",
       ]);
       expect(page2.records.map((r) => r.data.country)).toEqual([
-        "Italy", "Netherlands", "Portugal",
+        "Italy",
+        "Netherlands",
+        "Portugal",
       ]);
       expect(page3.records.map((r) => r.data.country)).toEqual(["Spain"]);
 
@@ -274,7 +293,9 @@ describeIfDb("RecordRepository (integration) — guarded numeric cast", () => {
 
       // co2_emissions >= 70 excludes Netherlands (60.0) AND Portugal (NULL)
       const query = {
-        filters: [{ field: "co2_emissions", operator: "gte" as const, value: "70" }],
+        filters: [
+          { field: "co2_emissions", operator: "gte" as const, value: "70" },
+        ],
         sort: { field: "co2_emissions", direction: "desc" as const },
         pagination: { page: 1, limit: 2, offset: 0 },
       };
@@ -286,8 +307,14 @@ describeIfDb("RecordRepository (integration) — guarded numeric cast", () => {
         columnsByName,
       );
 
-      expect(page1.records.map((r) => r.data.country)).toEqual(["Germany", "Belgium"]);
-      expect(page2.records.map((r) => r.data.country)).toEqual(["Spain", "France"]);
+      expect(page1.records.map((r) => r.data.country)).toEqual([
+        "Germany",
+        "Belgium",
+      ]);
+      expect(page2.records.map((r) => r.data.country)).toEqual([
+        "Spain",
+        "France",
+      ]);
       expect(page1.total).toBe(5); // Germany, Belgium, Spain, France, Italy
       expect(page2.total).toBe(5);
     });

@@ -38,4 +38,12 @@ export default [
       "prettier/prettier": "error",
     },
   },
+
+  {
+    files: ["**/*.test.ts"],
+    rules: {
+      quotes: "off",
+      "prettier/prettier": "off",
+    },
+  },
 ];

@@ -14,7 +14,7 @@ import type {
  * So only cast when the extracted text matches the importer’s
  * detection pattern, otherwise we return SQL NULL. This prevents runtime
  * cast errors and makes non-conforming cells behave as absent values.
- * 
+ *
  * TODO Maybe export numeric/date regexes  type-detection patterns from
  * services/importer/src/services/type_detector.service.ts
  * or share in a util file

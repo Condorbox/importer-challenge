@@ -81,6 +81,19 @@ recordsRouter.get(
         parsed.sort,
       );
       const result = await findRecords(importId, parsed, columnsByName);
+      const totalPages = Math.ceil(result.total / parsed.pagination.limit);
+
+      if (result.total > 0 && parsed.pagination.page > totalPages) {
+        const response: ApiResponse<never> = {
+          success: false,
+          error:
+            `Page ${parsed.pagination.page} does not exist for this query. ` +
+            `There ${totalPages === 1 ? "is" : "are"} ${totalPages} page(s) of ` +
+            `results (${result.total} total, ${parsed.pagination.limit} per page).`,
+        };
+        res.status(404).json(response);
+        return;
+      }
 
       const response: ApiResponse<RecordsResponse> = {
         success: true,

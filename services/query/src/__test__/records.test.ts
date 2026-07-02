@@ -273,26 +273,50 @@ describe("GET /datasets/:importId/records", () => {
       );
     });
 
-    it("returns a valid, empty envelope for a page beyond the last page", async () => {
+    it("returns 404 when requesting a page beyond the last page of actual results", async () => {
       (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
         records: [],
-        total: 25,
+        total: 25, // 3 pages at limit=10
       });
 
-      const res = await request(app).get(
-        "/datasets/1/records?page=10&limit=10",
-      );
+      const res = await request(app).get("/datasets/1/records?page=10&limit=10");
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/Page 10 does not exist/);
+      expect(res.body.error).toMatch(/3 page\(s\)/);
+    });
+
+    it("does not 404 on the exact last valid page", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [makeRecord()],
+        total: 25, // page 3 of 3 at limit=10 contains the 25th row
+      });
+
+      const res = await request(app).get("/datasets/1/records?page=3&limit=10");
 
       expect(res.status).toBe(200);
-      expect(res.body.data.records).toEqual([]);
-      expect(res.body.data.pagination).toEqual(
-        expect.objectContaining({
-          page: 10,
-          totalPages: 3,
-          hasNextPage: false,
-          hasPreviousPage: true,
-        }),
-      );
+      expect(res.body.success).toBe(true);
+    });
+
+    it("does not 404 when a filter legitimately matches zero rows (totalPages=0, page defaults to 1)", async () => {
+      (recordService.findRecords as jest.Mock).mockResolvedValueOnce({
+        records: [],
+        total: 0,
+      });
+
+      const res = await request(app).get("/datasets/1/records?country=Nowhereland");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.pagination).toEqual({
+        page: 1,
+        limit: 50,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      });
     });
   });
 });

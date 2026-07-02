@@ -9,6 +9,7 @@ import {
 } from "../services/csv_parser.service";
 import { persistImport } from "../services/import.service";
 import { db } from "@shared/db/client";
+import { isDatabaseConnectivityError } from "@shared/errors/db_errors";
 
 export const importRouter = Router();
 
@@ -84,6 +85,16 @@ importRouter.post(
           error: err.message,
         };
         res.status(422).json(response);
+        return;
+      }
+
+      if (isDatabaseConnectivityError(err)) {
+        res.status(503).json({
+          success: false,
+          error:
+            "The database is temporarily unavailable. Please try again shortly.",
+        });
+
         return;
       }
 

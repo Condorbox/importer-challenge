@@ -19,7 +19,7 @@ const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
  */
 const CONTROL_CHARS = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
-// TODO 
+// TODO Put it in a shared file
 const NUMERIC_VALUE = /^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/;
 
 export function sanitizeCell(value: string): string {

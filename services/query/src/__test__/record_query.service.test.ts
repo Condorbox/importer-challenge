@@ -75,14 +75,18 @@ describe("buildRecordQuery", () => {
     expect(render(whereSql)).toEqual({
       sql:
         '(("records"."import_id" = $1) and ("records"."data" ->> $2 = $3) ' +
-        'and (("records"."data" ->> $4)::numeric >= $5) ' +
-        'and (("records"."data" ->> $6)::timestamptz <= $7))',
+        'and ((CASE WHEN "records"."data" ->> $4 ~ $5 THEN ("records"."data" ->> $6)::numeric ELSE NULL END) >= $7) ' +
+        'and ((CASE WHEN "records"."data" ->> $8 ~ $9 THEN ("records"."data" ->> $10)::timestamptz ELSE NULL END) <= $11))',
       params: [
         42,
         "country",
         "Spain",
         "co2_emissions",
+        String.raw`^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$`,
+        "co2_emissions",
         "100",
+        "recorded_at",
+        String.raw`^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$`,
         "recorded_at",
         "2024-01-01",
       ],
@@ -115,26 +119,30 @@ describe("buildRecordQuery", () => {
   it("builds typed order by clauses for numeric and date sorts", () => {
     const numericSort = buildRecordQuery(
       42,
-      parsedQuery({
-        sort: { field: "co2_emissions", direction: "desc" },
-      }),
+      parsedQuery({ sort: { field: "co2_emissions", direction: "desc" } }),
       columnsByName,
     );
     const dateSort = buildRecordQuery(
       42,
-      parsedQuery({
-        sort: { field: "recorded_at", direction: "asc" },
-      }),
+      parsedQuery({ sort: { field: "recorded_at", direction: "asc" } }),
       columnsByName,
     );
 
     expect(render(numericSort.orderBySql!)).toEqual({
-      sql: '("records"."data" ->> $1)::numeric DESC',
-      params: ["co2_emissions"],
+      sql: '(CASE WHEN "records"."data" ->> $1 ~ $2 THEN ("records"."data" ->> $3)::numeric ELSE NULL END) DESC',
+      params: [
+        "co2_emissions",
+        String.raw`^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$`,
+        "co2_emissions",
+      ],
     });
     expect(render(dateSort.orderBySql!)).toEqual({
-      sql: '("records"."data" ->> $1)::timestamptz ASC',
-      params: ["recorded_at"],
+      sql: '(CASE WHEN "records"."data" ->> $1 ~ $2 THEN ("records"."data" ->> $3)::timestamptz ELSE NULL END) ASC',
+      params: [
+        "recorded_at",
+        String.raw`^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$`,
+        "recorded_at",
+      ],
     });
   });
 
